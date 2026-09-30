@@ -34,6 +34,8 @@ sudo ./verify.sh CTID
 
 Локальный архив Docker-образов `pentagi-proxmox-images-v2.1.0-amd64.tar.zst` занимает 7 322 951 369 байт; SHA-256: `e8239e228d7ac769f0fd0d4e0dd558ad71c9081fac9a19b27bdd5408a71b994c`. Скопируйте его на узел Proxmox как `images.tar.zst` рядом с `deploy.sh` **до** запуска. Скрипт проверит SHA-256 на узле и после передачи в CT, распакует через `zstd | docker load` и скачает из реестров только недостающие образы. Сам архив в Git не включён.
 
+Если архив скачан по частям из [GitHub Releases](https://github.com/bogdanzolotovski-blip/pentagi-proxmox-lxc/releases/tag/v2.1.0-lxc.1), положите все пять частей в корень репозитория и запустите `./assemble-images.sh`. Скрипт проверит SHA-256 каждой части и собранного архива.
+
 Для доступа к UI узнайте адрес CT через `pct exec CTID -- hostname -I` и откройте SSH-туннель с вашего компьютера:
 
 ```bash
