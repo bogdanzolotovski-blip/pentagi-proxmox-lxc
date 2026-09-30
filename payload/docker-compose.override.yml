@@ -1,0 +1,9 @@
+services:
+  pentagi:
+    image: vxcontrol/pentagi:2.1.0
+  pgvector:
+    image: vxcontrol/pgvector:latest
+  pgexporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.16.0
+  scraper:
+    image: vxcontrol/scraper:latest

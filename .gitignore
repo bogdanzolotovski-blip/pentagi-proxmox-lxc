@@ -1,0 +1,6 @@
+config.env
+*.tar
+*.tar.zst
+*.part-*
+*.log
+.env
