@@ -7,6 +7,7 @@ if (( EUID != 0 )); then
 fi
 command -v pct >/dev/null || { echo 'pct is missing: run on a Proxmox VE node.' >&2; exit 1; }
 command -v pveam >/dev/null || { echo 'pveam is missing.' >&2; exit 1; }
+command -v pvesm >/dev/null || { echo 'pvesm is missing.' >&2; exit 1; }
 
 config=${1:-./config.env}
 [[ -f "$config" ]] || { echo "Missing config: $config" >&2; exit 1; }
@@ -21,6 +22,8 @@ set +a
   echo 'Invalid storage or bridge name.' >&2; exit 1;
 }
 [[ -f $SSH_PUBLIC_KEY_FILE ]] || { echo "SSH public key missing: $SSH_PUBLIC_KEY_FILE" >&2; exit 1; }
+pvesm status --storage "$PVE_STORAGE" >/dev/null || { echo "Storage unavailable: $PVE_STORAGE" >&2; exit 1; }
+pvesm status --storage "$TEMPLATE_STORAGE" >/dev/null || { echo "Storage unavailable: $TEMPLATE_STORAGE" >&2; exit 1; }
 if pct config "$CTID" >/dev/null 2>&1; then
   echo "CT $CTID already exists. Refusing to modify it." >&2
   exit 1
@@ -43,6 +46,10 @@ if [[ -f $source_dir/images.tar.zst ]]; then
 fi
 
 template=$(pveam available --section system | awk '$2 ~ /^ubuntu-24\.04-standard_.*_amd64\.tar\.zst$/ {print $2}' | sort -V | tail -1)
+if [[ -z $template ]]; then
+  pveam update
+  template=$(pveam available --section system | awk '$2 ~ /^ubuntu-24\.04-standard_.*_amd64\.tar\.zst$/ {print $2}' | sort -V | tail -1)
+fi
 [[ -n $template ]] || { echo 'Ubuntu 24.04 LXC template is unavailable.' >&2; exit 1; }
 template_volid="$TEMPLATE_STORAGE:vztmpl/$template"
 if ! pveam list "$TEMPLATE_STORAGE" | awk '{print $1}' | grep -Fxq "$template_volid"; then

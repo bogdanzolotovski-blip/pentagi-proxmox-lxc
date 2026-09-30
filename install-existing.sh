@@ -13,6 +13,12 @@ features=$(sed -n 's/^features: //p' <<<"$config")
   echo 'CT requires nesting=1,keyctl=1. Set those features while stopped, then retry.' >&2; exit 1;
 }
 if ! pct status "$ctid" | grep -q running; then pct start "$ctid"; fi
+ready=0
+for _ in {1..30}; do
+  if pct exec "$ctid" -- getent hosts archive.ubuntu.com >/dev/null 2>&1; then ready=1; break; fi
+  sleep 2
+done
+(( ready == 1 )) || { echo 'CT networking/DNS is not ready.' >&2; exit 1; }
 
 source_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 for file in install-inside-ct.sh prefetch-images.sh verify-inside-ct.sh images.lock docker-compose.override.yml; do
